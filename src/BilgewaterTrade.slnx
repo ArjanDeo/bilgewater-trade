@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BilgewaterTrade.Api/BilgewaterTrade.Api.csproj" />
+  <Project Path="BilgewaterTrade.Core/BilgewaterTrade.Core.csproj" />
+  <Project Path="BilgewaterTrade.DataAccess/BilgewaterTrade.DataAccess.csproj" />
+  <Project Path="BilgewaterTrade.Worker/BilgewaterTrade.Worker.csproj" />
+</Solution>
