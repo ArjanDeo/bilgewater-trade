@@ -14,7 +14,7 @@ public class BilgewaterTradeDbContext : DbContext
     public DbSet<AuctionHouseSnapshot> AuctionHouseSnapshots => Set<AuctionHouseSnapshot>();
     public DbSet<CommodityListing> CommodityListings => Set<CommodityListing>();
     public DbSet<RealmListing> RealmListings => Set<RealmListing>();
-    
+    public DbSet<Realm> Realms => Set<Realm>();
     #endregion Tables
 
 }

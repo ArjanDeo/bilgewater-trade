@@ -7,8 +7,27 @@ public class BlizzardApiClient(FluentClient fluentClient, BlizzardAuthClient aut
 {
     public async Task<CommoditiesResponseDto> GetCommoditiesAsync() =>
         await fluentClient
-            .GetAsync("https://eu.api.blizzard.com/data/wow/auctions/commodities")
-            .WithHeader("Authorization", $"Bearer {await authClient.GetAccessTokenAsync()}")
-            .WithArgument("namespace", "dynamic-eu")
+            .GetAsync("https://us.api.blizzard.com/data/wow/auctions/commodities")
+            .WithBearerAuthentication(await authClient.GetAccessTokenAsync())
+            .WithArgument("namespace", "dynamic-us")
             .As<CommoditiesResponseDto>();
+
+    public async Task<RealmAuctionResponseDto> GetRealmAuctionsAsync(int connectedRealmId) =>
+        await fluentClient
+            .GetAsync($"https://us.api.blizzard.com/data/wow/connected-realm/{connectedRealmId}/auctions")
+            .WithBearerAuthentication(await authClient.GetAccessTokenAsync())
+            .WithArgument("namespace", "dynamic-us")
+            .As<RealmAuctionResponseDto>();
+    public async Task<ConnectedRealmIndexResponseDto> GetConnectedRealmIndexAsync() =>
+        await fluentClient
+            .GetAsync("https://us.api.blizzard.com/data/wow/connected-realm/index")
+            .WithBearerAuthentication(await authClient.GetAccessTokenAsync())
+            .WithArgument("namespace", "dynamic-us")
+            .As<ConnectedRealmIndexResponseDto>();
+    public async Task<ConnectedRealmResponseDto> GetConnectedRealmAsync(int connectedRealmId) =>
+        await fluentClient
+            .GetAsync($"https://us.api.blizzard.com/data/wow/connected-realm/{connectedRealmId}")
+            .WithBearerAuthentication(await authClient.GetAccessTokenAsync())
+            .WithArgument("namespace", "dynamic-us")
+            .As<ConnectedRealmResponseDto>();
 }
