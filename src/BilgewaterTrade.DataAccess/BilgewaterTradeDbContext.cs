@@ -11,6 +11,10 @@ public class BilgewaterTradeDbContext : DbContext
     }
     #region Tables
     public DbSet<Item> Items => Set<Item>();
+    public DbSet<AuctionHouseSnapshot> AuctionHouseSnapshots => Set<AuctionHouseSnapshot>();
+    public DbSet<CommodityListing> CommodityListings => Set<CommodityListing>();
+    public DbSet<RealmListing> RealmListings => Set<RealmListing>();
+    
     #endregion Tables
 
 }
