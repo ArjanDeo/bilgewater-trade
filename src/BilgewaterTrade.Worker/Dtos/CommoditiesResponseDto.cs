@@ -1,33 +1,34 @@
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace BilgewaterTrade.Worker.Dtos;
 
 public class CommoditiesResponseDto
 {
-    [JsonPropertyName("auctions")]
+    [JsonProperty("auctions")]
     public required List<CommodityAuctionDto> Auctions { get; set; }
 }
 
 public class CommodityAuctionDto
 {
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public long Id { get; set; }
 
-    [JsonPropertyName("item")]
+    [JsonProperty("item")]
     public required ItemRefDto Item { get; set; }
 
-    [JsonPropertyName("quantity")]
+    [JsonProperty("quantity")]
     public int Quantity { get; set; }
 
-    [JsonPropertyName("unit_price")]
-    public int UnitPrice { get; set; }
+    [JsonProperty("unit_price")]
+    public long UnitPrice { get; set; }
 
-    [JsonPropertyName("time_left")]
+    [JsonProperty("time_left")]
     public required string TimeLeft { get; set; }
 }
 
 public class ItemRefDto
 {
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public int Id { get; set; }
 }

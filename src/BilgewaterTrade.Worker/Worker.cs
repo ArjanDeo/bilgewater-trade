@@ -1,5 +1,6 @@
 using BilgewaterTrade.Core.Models;
 using BilgewaterTrade.DataAccess;
+using BilgewaterTrade.Worker.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace BilgewaterTrade.Worker;
@@ -29,7 +30,55 @@ public class Worker(ILogger<Worker> logger, BlizzardApiClient apiClient, IServic
                 await dbContext.SaveChangesAsync(stoppingToken);
                 if (logger.IsEnabled(LogLevel.Information))
                     logger.LogInformation("New commodities snapshot saved at: {time}", DateTimeOffset.Now);
-                // TODO: map commodities.Auctions -> CommodityListing rows, using snapshot.Id
+
+                var commodityIdHashSet = commodities.Auctions
+                    .Select(a => a.Item.Id)
+                    .ToHashSet();
+                
+                var existingItemIds = await dbContext.Items
+                    .Where(i => commodityIdHashSet.Contains(i.Id))
+                    .Select(i => i.Id)
+                    .ToHashSetAsync(stoppingToken);
+                var newItemIds = commodityIdHashSet.Except(existingItemIds);
+                
+                var newItems = newItemIds.Select(id => new Item
+                {
+                    Id = id,
+                    Name = "Unknown Item",
+                    ItemLevel = 0,
+                    IsCommodity = true
+                }).ToList();
+                var first = commodities.Auctions.First();
+                var listings = commodities.Auctions.Select(auction =>
+                {
+                    if (Enum.TryParse<Common.TimeLeft>(auction.TimeLeft, ignoreCase: true, out var timeLeft))
+                        return new CommodityListing
+                        {
+                            ItemId = auction.Item.Id,
+                            AuctionHouseSnapshotId = snapshot.Id,
+                            UnitPriceCopper = auction.UnitPrice,
+                            Quantity = auction.Quantity,
+                            TimeLeft = timeLeft
+                        };
+                    logger.LogWarning("Auction {AuctionId} had missing/invalid TimeLeft: {Raw}", auction.Id, auction.TimeLeft);
+                    timeLeft = Common.TimeLeft.Short; // fallback default
+
+                    return new CommodityListing
+                    {
+                        ItemId = auction.Item.Id,
+                        AuctionHouseSnapshotId = snapshot.Id,
+                        UnitPriceCopper = auction.UnitPrice,
+                        Quantity = auction.Quantity,
+                        TimeLeft = timeLeft
+                    };
+                }).ToList();
+
+                dbContext.Items.AddRange(newItems);
+                await dbContext.SaveChangesAsync(stoppingToken);
+
+                dbContext.CommodityListings.AddRange(listings);
+                await dbContext.SaveChangesAsync(stoppingToken);
+                
             }
 
             await Task.Delay(TimeSpan.FromHours(1), stoppingToken);

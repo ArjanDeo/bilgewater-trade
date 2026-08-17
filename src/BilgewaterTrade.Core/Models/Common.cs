@@ -7,6 +7,6 @@ public class Common
         Short,
         Medium,
         Long,
-        VeryLong
+        Very_Long
     }
 }

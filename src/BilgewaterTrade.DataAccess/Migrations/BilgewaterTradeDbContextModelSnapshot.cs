@@ -68,8 +68,8 @@ namespace BilgewaterTrade.DataAccess.Migrations
                     b.Property<int>("TimeLeft")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UnitPriceCopper")
-                        .HasColumnType("integer");
+                    b.Property<long>("UnitPriceCopper")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -114,8 +114,8 @@ namespace BilgewaterTrade.DataAccess.Migrations
                     b.Property<int>("AuctionHouseSnapshotId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("BuyoutCopper")
-                        .HasColumnType("integer");
+                    b.Property<long?>("BuyoutCopper")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("integer");
