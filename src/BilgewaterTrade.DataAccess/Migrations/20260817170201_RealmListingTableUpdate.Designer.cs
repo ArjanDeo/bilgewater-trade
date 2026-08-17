@@ -3,6 +3,7 @@ using System;
 using BilgewaterTrade.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BilgewaterTrade.DataAccess.Migrations
 {
     [DbContext(typeof(BilgewaterTradeDbContext))]
-    partial class BilgewaterTradeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817170201_RealmListingTableUpdate")]
+    partial class RealmListingTableUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,11 +33,11 @@ namespace BilgewaterTrade.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ConnectedRealmId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("FetchedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Realm")
+                        .HasColumnType("text");
 
                     b.Property<string>("Region")
                         .IsRequired()

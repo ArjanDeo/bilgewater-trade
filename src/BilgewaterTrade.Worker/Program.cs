@@ -5,8 +5,8 @@ using Pathoschild.Http.Client;
 
 // Run the worker with these set to true once to seed DB info if it is empty. (remember migrations as well)
 // Seeding takes approximately 3 minutes as of 08/26. (Realms is fast, but there are ±170,000 items to insert)
-const bool seedRealms = true;
-const bool seedItems = true;
+const bool seedRealms = false;
+const bool seedItems = false;
 
 var builder = Host.CreateApplicationBuilder(args);
 
