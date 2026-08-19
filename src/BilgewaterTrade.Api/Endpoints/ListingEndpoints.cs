@@ -10,14 +10,14 @@ public static class ListingEndpoints
     {
         var group = app.MapGroup("/api/listings");
 
-        group.MapGet("/", async ([FromQuery]
-            int connectedRealmId, [FromQuery]
-            string item, [FromServices]
+        group.MapGet("/{connectedRealmId:int}", async (
+            int connectedRealmId,
+            string searchQuery, [FromServices]
             IListingService listingService) =>
         {
             var result = await listingService.SearchListings(
                 connectedRealmId,
-                item);
+                searchQuery);
 
             if (result.IsFailure)
             {

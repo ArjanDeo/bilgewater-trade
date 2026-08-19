@@ -9,7 +9,6 @@ public static class Common
         Short,
         Medium,
         Long,
-        [JsonProperty("very_long")]
-        VeryLong
+        Very_Long
     }
 }

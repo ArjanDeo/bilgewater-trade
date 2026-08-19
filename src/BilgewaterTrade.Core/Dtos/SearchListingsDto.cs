@@ -10,11 +10,9 @@ public class SearchListingsDto
 
         public bool IsCommodity { get; set; }
 
-        public long? BuyoutCopper { get; set; }
+        public long? CheapestBuyoutCopper { get; set; }
 
-        public long? UnitPriceCopper { get; set; }
+        public long? CheapestUnitPriceCopper { get; set; }
 
         public int Quantity { get; set; }
-
-        public Common.TimeLeft TimeLeft { get; set; }
 }

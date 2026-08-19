@@ -20,7 +20,7 @@ public class ListingService(BilgewaterTradeDbContext context, IConnectionMultipl
                 {
                     x.Id,
                     x.Name,
-                    x.IsCommodity
+                    x.IsCommodity,
                 })
                 .ToListAsync();
 
@@ -67,13 +67,12 @@ public class ListingService(BilgewaterTradeDbContext context, IConnectionMultipl
                         missedItemIds.Contains(x.ItemId))
                     .Select(x => new SearchListingsDto()
                     {
-                        BuyoutCopper = x.BuyoutCopper,
+                        CheapestBuyoutCopper = x.BuyoutCopper,
                         IsCommodity = false,
                         ItemId = x.ItemId,
                         ItemName = x.Item.Name,
                         Quantity = x.Quantity,
-                        TimeLeft = x.TimeLeft,
-                        UnitPriceCopper = x.BuyoutCopper
+                        CheapestUnitPriceCopper = x.BuyoutCopper
                     })
                     .ToListAsync();
 
@@ -88,10 +87,9 @@ public class ListingService(BilgewaterTradeDbContext context, IConnectionMultipl
                         ItemId = x.ItemId,
                         ItemName = x.Item.Name,
                         IsCommodity = true,
-                        BuyoutCopper = null,
-                        UnitPriceCopper = x.UnitPriceCopper,
+                        CheapestBuyoutCopper = null,
+                        CheapestUnitPriceCopper = x.UnitPriceCopper,
                         Quantity = x.Quantity,
-                        TimeLeft = x.TimeLeft
                     })
                     .ToListAsync();
 
@@ -109,12 +107,48 @@ public class ListingService(BilgewaterTradeDbContext context, IConnectionMultipl
                 }
             }
 
-            var results = cachedResults
-                .Concat(freshResults)
-                .OrderBy(x => x.BuyoutCopper ?? x.UnitPriceCopper)
+            var allResults = cachedResults.Concat(freshResults);
+
+            var aggregated = new Dictionary<int, SearchListingsDto>();
+
+            foreach (var listing in allResults)
+            {
+                if (aggregated.TryGetValue(listing.ItemId, out var existing))
+                {
+                    existing.Quantity += listing.Quantity;
+
+                    if (listing.CheapestUnitPriceCopper is { } unitPrice &&
+                        (existing.CheapestUnitPriceCopper is null || unitPrice < existing.CheapestUnitPriceCopper))
+                    {
+                        existing.CheapestUnitPriceCopper = unitPrice;
+                    }
+
+                    if (listing.CheapestBuyoutCopper is { } buyoutPrice &&
+                        (existing.CheapestBuyoutCopper is null || buyoutPrice < existing.CheapestBuyoutCopper))
+                    {
+                        existing.CheapestBuyoutCopper = buyoutPrice;
+                    }
+                }
+                else
+                {
+                    // new SearchListingsDto instance per item, so we don't mutate cached/fresh source objects
+                    aggregated[listing.ItemId] = new SearchListingsDto
+                    {
+                        ItemId = listing.ItemId,
+                        ItemName = listing.ItemName,
+                        IsCommodity = listing.IsCommodity,
+                        Quantity = listing.Quantity,
+                        CheapestUnitPriceCopper = listing.CheapestUnitPriceCopper,
+                        CheapestBuyoutCopper = listing.CheapestBuyoutCopper
+                    };
+                }
+            }
+
+            var results = aggregated.Values
+                .OrderBy(x => x.CheapestUnitPriceCopper ?? x.CheapestBuyoutCopper)
                 .ToList();
-            
-                return Result<List<SearchListingsDto>>.Success(results);
+
+            return Result<List<SearchListingsDto>>.Success(results);
     }
     
 }

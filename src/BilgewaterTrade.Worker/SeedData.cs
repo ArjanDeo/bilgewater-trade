@@ -60,8 +60,8 @@ public class SeedData(
                     Name = realm.Name["en_US"],
                     Slug = realm.Slug
                 });
-                Console.WriteLine($"Realm {realm.Name["en_US"]} inserted.");
             }
+            Console.WriteLine($"Realms from Cluster ID {reference.Id} inserted.");
         }
 
         await db.SaveChangesAsync();
@@ -166,7 +166,7 @@ public class SeedData(
                 break;
             }
 
-            await Task.Delay(50);
+            // await Task.Delay(50);
         }
 
         Console.WriteLine(
