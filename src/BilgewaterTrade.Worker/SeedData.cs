@@ -1,6 +1,5 @@
-using BilgewaterTrade.Core.Models;
+using BilgewaterTrade.DataAccess.Tables;
 using BilgewaterTrade.DataAccess;
-using BilgewaterTrade.Worker.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Pathoschild.Http.Client;

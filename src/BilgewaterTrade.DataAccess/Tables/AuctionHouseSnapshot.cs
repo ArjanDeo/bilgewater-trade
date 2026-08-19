@@ -1,6 +1,4 @@
-using System.Runtime.Serialization;
-
-namespace BilgewaterTrade.Core.Models;
+namespace BilgewaterTrade.DataAccess.Tables;
 
 public enum SnapshotSource
 {

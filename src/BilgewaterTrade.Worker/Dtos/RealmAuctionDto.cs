@@ -1,6 +1,5 @@
-using BilgewaterTrade.Core.Models;
+using BilgewaterTrade.DataAccess;
 using Newtonsoft.Json;
-
 namespace BilgewaterTrade.Worker.Dtos;
 
 public class RealmAuctionDto

@@ -1,39 +1,24 @@
-using BilgewaterTrade.Core.Models;
+using BilgewaterTrade.DataAccess.Tables;
 using BilgewaterTrade.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
 namespace BilgewaterTrade.Worker;
 
-public class Worker(
-    ILogger<Worker> logger,
-    BlizzardApiClient apiClient,
-    IServiceScopeFactory scopeFactory) : BackgroundService
+public class Worker(ILogger<Worker> logger, BlizzardApiClient apiClient, IServiceScopeFactory scopeFactory) : BackgroundService
 {
     // For testing only
     private const int ConnectedRealmId = 11;
 
-    private Common.TimeLeft ParseCommodityTimeLeft(
-        string value,
-        long auctionId)
+    private Common.TimeLeft ParseCommodityTimeLeft(string value, long auctionId)
     {
-        if (Enum.TryParse<Common.TimeLeft>(
-                value,
-                ignoreCase: true,
-                out var timeLeft))
-        {
+        if (Enum.TryParse<Common.TimeLeft>(value, ignoreCase: true, out var timeLeft))
             return timeLeft;
-        }
-
-        logger.LogWarning(
-            "Auction {AuctionId} had missing/invalid TimeLeft: {Raw}",
-            auctionId,
-            value);
-
+        
+        logger.LogWarning("Auction {AuctionId} had missing/invalid TimeLeft: {Raw}", auctionId, value);
         return Common.TimeLeft.Short;
     }
 
-    private async Task FetchCommoditiesAsync(
-        CancellationToken stoppingToken)
+    private async Task FetchCommoditiesAsync(CancellationToken stoppingToken)
     {
         var commodities = await apiClient.GetCommoditiesAsync();
 
@@ -100,16 +85,13 @@ public class Worker(
             listings.Count);
     }
 
-    private async Task FetchRealmAuctionsAsync(
-        int connectedRealmId,
-        CancellationToken stoppingToken)
+    private async Task FetchRealmAuctionsAsync(int connectedRealmId,  CancellationToken stoppingToken)
     {
         var auctions = await apiClient.GetRealmAuctionsAsync(connectedRealmId);
 
         using var scope = scopeFactory.CreateScope();
 
-        var dbContext = scope.ServiceProvider
-            .GetRequiredService<BilgewaterTradeDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<BilgewaterTradeDbContext>();
 
         var snapshot = new AuctionHouseSnapshot
         {
@@ -162,35 +144,40 @@ public class Worker(
         dbContext.RealmListings.AddRange(listings);
 
         await dbContext.SaveChangesAsync(stoppingToken);
-
-        logger.LogInformation(
-            "Saved {Count} realm auctions for connected realm {ConnectedRealmId}",
-            listings.Count,
-            connectedRealmId);
+        
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation(
+                "Saved {Count} realm auctions for connected realm {ConnectedRealmId}", 
+                listings.Count, 
+                connectedRealmId);
     }
 
-    protected override async Task ExecuteAsync(
-        CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<BilgewaterTradeDbContext>();
+
+        var pendingMigrations = await db.Database
+            .GetPendingMigrationsAsync(stoppingToken);
+
+        if (pendingMigrations.Any())
+        {
+            logger.LogError("{Time} - ERROR: Database migrations are pending.\n" + "Run 'dotnet ef database update' before starting the worker.", DateTimeOffset.Now);
+            return;
+        }
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation(
-                "Starting auction house fetch at: {Time}",
-                DateTimeOffset.Now);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Starting auction house fetch at: {Time}", DateTimeOffset.Now);
 
             await FetchCommoditiesAsync(stoppingToken);
 
-            await FetchRealmAuctionsAsync(
-                ConnectedRealmId,
-                stoppingToken);
+            await FetchRealmAuctionsAsync(ConnectedRealmId, stoppingToken);
+            
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Auction house fetch completed at: {Time}", DateTimeOffset.Now);
 
-            logger.LogInformation(
-                "Auction house fetch completed at: {Time}",
-                DateTimeOffset.Now);
-
-            await Task.Delay(
-                TimeSpan.FromHours(1),
-                stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 }

@@ -1,4 +1,5 @@
-namespace BilgewaterTrade.Core.Models;
+namespace BilgewaterTrade.DataAccess.Tables;
+
 
 public class RealmListing
 {

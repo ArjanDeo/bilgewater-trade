@@ -1,4 +1,4 @@
-using BilgewaterTrade.Core.Models;
+using BilgewaterTrade.DataAccess.Tables;
 using Microsoft.EntityFrameworkCore;
 
 namespace BilgewaterTrade.DataAccess;

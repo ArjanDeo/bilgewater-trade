@@ -1,4 +1,6 @@
-namespace BilgewaterTrade.Core.Models;
+using BilgewaterTrade.DataAccess;
+
+namespace BilgewaterTrade.DataAccess.Tables;
 
 public class CommodityListing
 {

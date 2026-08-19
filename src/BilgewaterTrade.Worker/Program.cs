@@ -44,4 +44,5 @@ if (seedRealms || seedItems)
     return;
 }
 
+
 await host.RunAsync();
